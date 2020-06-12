@@ -4,10 +4,10 @@ import os
 import locale
 
 if sublime.version() >= '3000':
-  from RuboCop.file_tools import FileTools
-  from RuboCop.rubocop_runner import RubocopRunner
-  from RuboCop.constants import *
-  from RuboCop.rubocop_listener import RubocopEventListener
+  from sublime_rubocop.file_tools import FileTools
+  from sublime_rubocop.rubocop_runner import RubocopRunner
+  from sublime_rubocop.constants import *
+  from sublime_rubocop.rubocop_listener import RubocopEventListener
 else:
   from file_tools import FileTools
   from rubocop_runner import RubocopRunner
@@ -26,6 +26,7 @@ class RubocopCommand(sublime_plugin.TextCommand):
       cfg_file = FileTools.quote(cfg_file)
     self.runner = RubocopRunner(
       {
+        'autocorrect_magic_comment': s.get('autocorrect_magic_comment'),
         'use_rbenv': s.get('check_for_rbenv'),
         'use_rvm': s.get('check_for_rvm'),
         'custom_rubocop_cmd': s.get('rubocop_command'),
@@ -139,7 +140,7 @@ class RubocopAutoCorrectCommand(RubocopCommand):
     quoted_file_path = FileTools.quote(path)
 
     # Run rubocop with auto-correction
-    self.runner.run([quoted_file_path], ['-a'])
+    self.runner.run([quoted_file_path], ['--safe-auto-correct'])
 
     sublime.status_message('RuboCop: Auto correction done.')
 

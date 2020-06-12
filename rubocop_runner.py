@@ -69,6 +69,7 @@ class RubocopRunner(object):
       else:
         result += shlex.split(self.custom_rubocop_cmd)
 
+
     # Options
     if options:
       for option in options:

@@ -5,9 +5,9 @@ import re
 import os
 
 if sublime.version() >= '3000':
-  from RuboCop.file_tools import FileTools
-  from RuboCop.rubocop_runner import RubocopRunner
-  from RuboCop.constants import *
+  from sublime_rubocop.file_tools import FileTools
+  from sublime_rubocop.rubocop_runner import RubocopRunner
+  from sublime_rubocop.constants import *
 else:
   from file_tools import FileTools
   from rubocop_runner import RubocopRunner
@@ -75,7 +75,7 @@ class RubocopEventListener(sublime_plugin.EventListener):
     view.add_regions(REGIONS_ID, lines, 'keyword', icon,
         REGIONS_OPTIONS_BITS)
 
-  def run_rubocop(self, view):
+  def run_rubocop(self, view, options = ['--format', 'emacs', '--force-exclusion']):
     s = sublime.load_settings(SETTINGS_FILE)
 
     rubocop_disable = view.settings().get(
@@ -87,6 +87,7 @@ class RubocopEventListener(sublime_plugin.EventListener):
       return []
 
 
+    autocorrect_magic_comment = view.settings().get('autocorrect_magic_comment', s.get('autocorrect_magic_comment'))
     use_rvm = view.settings().get('check_for_rvm', s.get('check_for_rvm'))
     use_rbenv = view.settings().get('check_for_rbenv', s.get('check_for_rbenv'))
     cmd = view.settings().get('rubocop_command', s.get('rubocop_command'))
@@ -100,6 +101,7 @@ class RubocopEventListener(sublime_plugin.EventListener):
 
     runner = RubocopRunner(
       {
+        'autocorrect_magic_comment': autocorrect_magic_comment,
         'use_rbenv': use_rbenv,
         'use_rvm': use_rvm,
         'custom_rubocop_cmd': cmd,
@@ -111,7 +113,8 @@ class RubocopEventListener(sublime_plugin.EventListener):
         'is_st2': sublime.version() < '3000'
       }
     )
-    output = runner.run([view.file_name()], ['--format', 'emacs', '--force-exclusion']).splitlines()
+
+    output = runner.run([view.file_name()], options).splitlines()
 
     return output
 
@@ -124,6 +127,14 @@ class RubocopEventListener(sublime_plugin.EventListener):
   def do_in_file_check(self, view):
     if not FileTools.is_ruby_file(view):
       return
+
+    auto = sublime.load_settings(SETTINGS_FILE).get('autocorrect_magic_comment')
+    if auto:
+      file_contents = view.substr(sublime.Region(0, view.size()))
+      # Check for the magic comment in the file, auto correct if exists
+      if ('# ' + auto) in file_contents:
+        self.run_rubocop(view, ['--safe-auto-correct'])
+
     mark = sublime.load_settings(SETTINGS_FILE).get('mark_issues_in_view')
     self.mark_issues(view, mark)
 

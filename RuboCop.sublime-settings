@@ -1,4 +1,8 @@
 {
+  // This will enable auto-correct when this comment is present
+  // in the Ruby file
+  "autocorrect_magic_comment": "rubocop-auto",
+
   // Here you can provide your own command line
   // which is used to run rubocop. The path will be
   // replaced by the file or folder which needs
@@ -37,10 +41,10 @@
   // of time, so ST2 might be a bit unresponsive when saving. As soon
   // as you encounter performance problems during saving a ruby file you
   // should set this to false.
-  "mark_issues_in_view": true,
+  "mark_issues_in_view": false,
 
   // Auto correct feature warning message
-  "show_auto_correct_warning": true,
+  "show_auto_correct_warning": false,
 
   // Optional general config file for rubocop.
   "rubocop_config_file": ""
